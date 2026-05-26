@@ -57,21 +57,43 @@ claude mcp list | grep hwp-mcp
 # hwp-mcp: npx -y hwp-mcp  - ✓ Connected
 ```
 
-`✓ Connected` 가 뜨면 끝. AI 한테 "내 문서.hwpx 읽어줘" 시키면 됨.
+`✓ Connected` 가 뜨면 끝.
+
+### 처음 써보기 (60초)
+
+설치 직후 동작 확인용 가장 짧은 검증:
+
+```
+나: 새 hwpx 문서 만들어줘. 파일 이름은 hello.hwpx 이고 "안녕 한글" 한 줄만 들어가게.
+AI: HWPX 문서 생성 완료 (created): hello.hwpx
+
+나: hello.hwpx 읽어줘.
+AI: # hello.hwpx
+    안녕 한글
+```
+
+위 두 단계가 되면 읽기·쓰기 양쪽 다 동작합니다. 이제 실제 문서로:
+
+- `~/Downloads/공고문.hwp 읽어줘`
+- `report.hwpx 의 {{이름}}을 남대현으로, {{날짜}}를 2026-05-26으로 채워줘`
+- `document.hwpx 의 첫 페이지를 SVG로 보여줘`
 
 ### 안 되면?
 
-**증상: `✗ Failed to connect`**
+| 증상 | 원인 / 해결 |
+|---|---|
+| `✗ Failed to connect` | `v0.2.0` bin symlink 버그 — [v0.2.1](https://github.com/treesoop/hwp-mcp/releases/tag/v0.2.1) 이상으로 업그레이드 (아래) |
+| 설치는 됐는데 `mcp__hwp-mcp__*` 도구가 안 보임 | Claude Code / Cursor 세션 **재시작** 필요 (MCP 도구는 세션 시작 시점에 로드됨) |
+| `npx: command not found` 또는 ESM 에러 | Node 20+ 인지 확인: `node --version`. Node 18 은 EOL — `nvm install 20` 또는 [공식 설치](https://nodejs.org) |
+| `npx` 가 옛 버전을 캐시 | `claude mcp add hwp-mcp -- npx -y hwp-mcp@latest` (`@latest` 명시) 또는 `npm cache clean --force` |
+| Claude Desktop / Cursor 에서 안 보임 | 설정 JSON 저장 후 앱 **완전 종료 + 재실행** (백그라운드 트레이도 종료) |
 
-`v0.2.0` 에서 bin symlink 통한 실행 시 `isMain` 가드가 무조건 false 가 되어 서버가 조용히 종료되는 버그가 있었습니다 ([fix in v0.2.1](https://github.com/treesoop/hwp-mcp/commit/2198c63)).
-
-**해결: `v0.2.1` 이상으로 업그레이드**
+**v0.2.0 → v0.2.1 업그레이드:**
 
 ```bash
-# npx 캐시 무효화 + 재등록
 claude mcp remove hwp-mcp
 claude mcp add hwp-mcp -- npx -y hwp-mcp@latest
-claude mcp list | grep hwp-mcp
+claude mcp list | grep hwp-mcp   # ✓ Connected
 ```
 
 설정 파일 방식(Claude Desktop/Cursor)이면 `args` 를 `["-y", "hwp-mcp@latest"]` 로:
@@ -87,12 +109,7 @@ claude mcp list | grep hwp-mcp
 }
 ```
 
-**v0.2.1 publish 전 임시 우회**: `node` 로 직접 호출
-
-```bash
-npm i -g hwp-mcp
-claude mcp add hwp-mcp -- node "$(npm root -g)/hwp-mcp/dist/server.js"
-```
+여전히 안 되면: [Issues](https://github.com/treesoop/hwp-mcp/issues) 에 `node --version`, `claude mcp list` 출력, 실행 OS 적어서 알려주세요.
 
 ---
 
@@ -330,9 +347,24 @@ AI: 9/9 페이지 SVG 저장 (rendered 9/9 pages):
 
 남은 v0.3 큰 항목: `.hwp` 바이너리 쓰기, 차트, 스타일 정의·적용, 텍스트박스 본문 추출, hwpctl 30 Actions(의도적 제외).
 
+## 릴리스 / 이슈
+
+- 변경 이력: <https://github.com/treesoop/hwp-mcp/releases>
+- 버그 신고 · 기능 제안: <https://github.com/treesoop/hwp-mcp/issues>
+- npm 패키지: <https://www.npmjs.com/package/hwp-mcp>
+
+이슈 올릴 때는 `node --version`, OS, MCP 클라이언트(Claude Code / Desktop / Cursor / …), 그리고 가능하면 재현되는 `.hwpx` 샘플을 첨부해주세요.
+
 ## English
 
-`hwp-mcp` is an MCP server for reading and writing Korean Hangul (.hwp / .hwpx) documents from Claude / Cursor / ChatGPT and any MCP-compatible client. **Read works for both formats; write currently supports .hwpx (find/replace, template fill, create new doc) — .hwp write is planned for v0.3.** Built on top of [rhwp](https://github.com/edwardkim/rhwp) (Rust + WebAssembly HWP engine by Edward Kim, MIT). Install: `claude mcp add hwp-mcp -- npx -y hwp-mcp`.
+`hwp-mcp` is an MCP server for reading and writing Korean Hangul (.hwp / .hwpx) documents from Claude / Cursor / ChatGPT and any MCP-compatible client. **Read works for both formats; write currently supports .hwpx (find/replace, template fill, create new doc) — .hwp write is planned for v0.3.** Built on top of [rhwp](https://github.com/edwardkim/rhwp) (Rust + WebAssembly HWP engine by Edward Kim, MIT).
+
+```bash
+claude mcp add hwp-mcp -- npx -y hwp-mcp
+claude mcp list | grep hwp-mcp   # ✓ Connected
+```
+
+**Not seeing `✓ Connected`?** Upgrade to v0.2.1+ (`npx -y hwp-mcp@latest`) — v0.2.0 had a bin-symlink bug that made the server exit silently. Tools not appearing in your AI client? Restart the session; MCP tools load at startup.
 
 ## License
 
