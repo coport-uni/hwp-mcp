@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -579,7 +581,11 @@ export async function runServer(): Promise<void> {
   await server.connect(transport);
 }
 
-const isMain = import.meta.url === `file://${process.argv[1]}`;
+// Resolve argv[1] through realpath so we correctly detect "run as main" when
+// invoked via the bin symlink (e.g. /opt/homebrew/bin/hwp-mcp -> dist/server.js).
+// Without this, npx/global-install launches would no-op and exit silently.
+const isMain =
+  import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
 if (isMain) {
   runServer().catch((e) => {
     process.stderr.write(`fatal: ${e?.message ?? e}\n`);
