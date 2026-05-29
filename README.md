@@ -14,16 +14,16 @@
 
 이 프로젝트는 두 부분으로 나뉩니다.
 
-- 🔧 **rhwp가 한 일 (핵심 엔진)** — [Edward Kim](https://github.com/edwardkim) 님의 [**rhwp**](https://github.com/edwardkim/rhwp)는 닫힌 한글 포맷(HWP 5.0 binary, HWPX/OWPML)을 전부 역공학으로 풀어 Rust + WebAssembly로 구현한 오픈소스 엔진입니다. 파싱, 표·이미지·수식·머리말 추출, SVG 렌더링, 한컴 호환 Field API — 이 모든 핵심 능력은 rhwp 가 제공합니다. **rhwp 가 없으면 이 프로젝트도 없습니다.**
+- 🔧 **핵심 엔진: rhwp** — [Edward Kim](https://github.com/edwardkim) 님의 [**rhwp**](https://github.com/edwardkim/rhwp)는 한글 포맷(HWP 5.0 binary, HWPX/OWPML)을 Rust + WebAssembly로 구현한 오픈소스 엔진입니다. 파싱, 표·이미지·수식·머리말 추출, SVG 렌더링, 한컴 호환 Field API 등 포맷 처리 능력을 제공합니다.
 
-- 🤝 **`hwp-mcp` 가 한 일 (에이전트 어댑터)** — `@rhwp/core` 위에 얹은 얇은 MCP 서버 layer. 우리가 추가한 것은:
+- 🤝 **`hwp-mcp` 가 한 일 (에이전트 어댑터)** — `@rhwp/core` 위에 얹은 MCP 서버 layer. 우리가 추가한 것은:
   - `read_hwp`, `fill_hwp_template`, `replace_hwp_text` 같은 **에이전트 친화적 도구 시그니처** — Claude/Cursor 같은 LLM이 자연어로 호출할 수 있게
   - 본문·표·이미지·머리말·꼬리말·각주·수식을 한 번에 dump 하는 **시나리오 중심 traversal walker**
   - 표 셀 병합 자동 처리, footnote/equation 자동 합본 같은 **사용 편의 layer**
   - rhwp 0.7.7 의 `exportHwpx` 라운드트립 한계를 우회하기 위한 **`.hwpx` ZIP-level mutation layer** (실제 쓰기를 가능하게 하는 핵심)
   - npm `hwp-mcp` 패키지 (한 줄 설치) + Node.js WASM 부트스트랩
 
-요약: **AI가 한글 문서를 진짜로 읽고 쓸 수 있게 해주는 어댑터**입니다. 모든 오픈 한글 능력에 대한 감사는 rhwp 프로젝트에 보내주세요 🙏
+요약: **AI 에이전트가 한글 문서를 읽고 쓸 수 있게 해주는 어댑터**입니다. 포맷 처리는 rhwp, 에이전트 연동은 hwp-mcp 가 담당합니다.
 
 ---
 
@@ -48,7 +48,7 @@ claude mcp add hwp-mcp -- npx -y hwp-mcp
 }
 ```
 
-Node.js 20 이상 필요.
+Node.js 20 이상 필요. **macOS · Windows · Linux 모두 지원** — 엔진이 WebAssembly 기반이라 한컴오피스 설치 없이 OS 무관하게 동작합니다.
 
 ### 설치 확인
 
@@ -329,9 +329,9 @@ AI: 9/9 페이지 SVG 저장 (rendered 9/9 pages):
 
 ## 크레딧
 
-**rhwp** ([@edwardkim](https://github.com/edwardkim)) — 핵심 파서·렌더러·Field API. 닫힌 한글 포맷을 오픈한 그 모든 작업이 이 프로젝트의 토대입니다. 가능하시다면 그 프로젝트도 함께 응원해 주세요: <https://github.com/edwardkim/rhwp>
+**rhwp** ([@edwardkim](https://github.com/edwardkim), MIT) — 한글 포맷 파서·렌더러·Field API. 이 프로젝트의 포맷 처리는 rhwp 에 기반합니다: <https://github.com/edwardkim/rhwp>
 
-**hwp-mcp** — rhwp 위에 AI 에이전트가 자연어로 호출할 수 있게 도구화한 얇은 MCP 어댑터. 핵심 능력은 모두 rhwp 의 것이고, 우리는 그것을 LLM 에 연결한 wiring 입니다.
+**hwp-mcp** — rhwp 위에 AI 에이전트가 자연어로 호출할 수 있게 도구화한 MCP 어댑터.
 
 ## 커버리지
 
@@ -357,7 +357,7 @@ AI: 9/9 페이지 SVG 저장 (rendered 9/9 pages):
 
 ## English
 
-`hwp-mcp` is an MCP server for reading and writing Korean Hangul (.hwp / .hwpx) documents from Claude / Cursor / ChatGPT and any MCP-compatible client. **Read works for both formats; write currently supports .hwpx (find/replace, template fill, create new doc) — .hwp write is planned for v0.3.** Built on top of [rhwp](https://github.com/edwardkim/rhwp) (Rust + WebAssembly HWP engine by Edward Kim, MIT).
+`hwp-mcp` is an MCP server for reading and writing Korean Hangul (.hwp / .hwpx) documents from Claude / Cursor / ChatGPT and any MCP-compatible client. **Read works for both formats; write currently supports .hwpx (find/replace, template fill, create new doc) — .hwp write is planned for v0.3.** Runs on macOS, Windows, and Linux (WebAssembly-based — no Hancom Office install required). Built on top of [rhwp](https://github.com/edwardkim/rhwp) (Rust + WebAssembly HWP engine by Edward Kim, MIT).
 
 ```bash
 claude mcp add hwp-mcp -- npx -y hwp-mcp
