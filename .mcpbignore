@@ -1,0 +1,21 @@
+# Source & build tooling (dist/ is shipped, src/ is not needed at runtime)
+src/
+test/
+docs/
+tsconfig.json
+vitest.config.ts
+
+# Dev metadata
+.git/
+.github/
+.gitignore
+.vitest-cache/
+*.log
+.DS_Store
+
+# Lockfile & raw assets not referenced by the manifest
+package-lock.json
+media/*.svg
+
+# Source maps (optional, keep bundle lean)
+dist/**/*.map
